@@ -1,0 +1,36 @@
+{
+	"description": "Docker secrets plugin for Passwordstate",
+	"documentation": "https://github.com/olljanat/docker-secretprovider-plugin-passwordstate",
+	"entrypoint": [
+		"/docker-secretprovider-plugin-passwordstate"
+	],
+	"env": [
+		{
+			"name": "PASSWORDSTATE_BASE_URL",
+			"description": "Passwordstate API URL",
+			"settable": [
+				"value"
+			],
+			"value": ""
+		},
+		{
+			"name": "PASSWORDSTATE_API_KEY",
+			"description": "Passwordstate API key",
+			"settable": [
+				"value"
+			],
+			"value": ""
+		}
+	],
+	"mounts": [],
+	"network": {
+		"type": "host"
+	},
+	"interface": {
+		"types":["docker.secretprovider/1.0"],
+		"socket":"pwdstate.sock"
+	},
+	"linux": {
+		"capabilities": ["CAP_SYS_ADMIN"]
+	}
+}
