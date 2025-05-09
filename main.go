@@ -3,9 +3,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 
 	"github.com/docker/docker/client"
 	"github.com/docker/go-plugins-helpers/secrets"
@@ -30,7 +32,7 @@ type passwordResponse struct {
 }
 
 func (d passwordStateSecretsDriver) Get(req secrets.Request) secrets.Response {
-	log.Infof("pwdstate: Secret: %v requested", req.SecretName)
+	log.Infof("Secret '%s' requested by %s (%s)", req.SecretName, req.ServiceName, req.TaskName)
 
 	errorResponse := func(s string, err error) secrets.Response {
 		log.Errorf("Error getting secret %q: %s: %v", req.SecretName, s, err)
@@ -76,6 +78,17 @@ func (d passwordStateSecretsDriver) Get(req secrets.Request) secrets.Response {
 }
 
 func main() {
+	cwd, err := os.Getwd()
+	if err != nil {
+		log.Fatalf("Failed to determine working directory: %s", err)
+	}
+	logLocation := filepath.Join(cwd, "pwdstate.log")
+	logFile, err := os.OpenFile(logLocation, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatalf("Failed to open log file %s for output: %s", logLocation, err)
+	}
+	log.SetOutput(io.MultiWriter(os.Stderr, logFile))
+
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		log.Fatalf("Failed to create Docker client: %v", err)
@@ -102,8 +115,8 @@ func main() {
 	}
 	h := secrets.NewHandler(d)
 
-	log.Infof("pwdstate: Starting Docker secrets plugin")
+	log.Infof("Starting Docker secrets plugin")
 	if err := h.ServeUnix("pwdstate", 0); err != nil {
-		log.Errorf("Error serving pwdstate: %v", err)
+		log.Errorf("Error serving %v", err)
 	}
 }
