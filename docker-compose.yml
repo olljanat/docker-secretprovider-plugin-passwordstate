@@ -8,5 +8,3 @@ secrets:
   test1:
     name: test1
     driver: pwdstate
-    labels:
-      password_list_id: "485"

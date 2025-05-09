@@ -12,29 +12,29 @@ TODO:
 docker plugin install \
     --alias pwdstate \
     --grant-all-permissions \
-    ollijanatuinen/docker-secretprovider-plugin-passwordstate:v0.1 \
+    ollijanatuinen/docker-secretprovider-plugin-passwordstate:v0.2 \
     PASSWORDSTATE_BASE_URL="https://passwordstate/api" \
-    PASSWORDSTATE_API_KEY="<api key>"
+    PASSWORDSTATE_API_KEY="<api key>" \
+    PASSWORDSTATE_LIST_ID="123"
 ```
 
 ## Deploy test container and verify that secret is visible
+**NOTE!!!** Swarm does not check if secret exist in backend shen calling `docker secret create`.
+It is only requested when task using secret is allocated.
 ```bash
-$ docker stack deploy -c docker-compose.yml --detach=false test
-Creating network test_default
-Creating secret test1
-Creating service test_app
+$ docker secret create --driver pwdstate test1
+f6tudm7i13hz47bg8dvjl7tam
+
+$ docker service create --name test --secret test1 nginx
+snk5zxolssjum9kecdpldtdu0
 overall progress: 1 out of 1 tasks
 1/1: running   [==================================================>]
-verify: Service 6t2sqgnkf74lujpeoeq6wpxjo converged
-
-$ docker secret ls
-ID                          NAME      DRIVER     CREATED          UPDATED
-zmn2431u8a8z1s9xr25wjtv47   test1     pwdstate   26 seconds ago   26 seconds ago
+verify: Service snk5zxolssjum9kecdpldtdu0 converged
 
 $ docker ps
-CONTAINER ID   IMAGE          COMMAND                  CREATED          STATUS          PORTS     NAMES
-cbc4828ddd57   nginx:latest   "/docker-entrypoint.…"   32 seconds ago   Up 32 seconds   80/tcp    test_app.1.lrt2pb5i5i06oif90kncj9n23
+CONTAINER ID   IMAGE          COMMAND                  CREATED              STATUS              PORTS     NAMES
+2ffaaa947950   nginx:latest   "/docker-entrypoint.…"   About a minute ago   Up About a minute   80/tcp    test.1.5m1mge0rf2pwnmdirejr3v81z
 
-$ docker exec -it test_app.1.lrt2pb5i5i06oif90kncj9n23 cat /run/secrets/test1
-7wf98+N3GJgQBnrqS63V6EqdXYu
+$ docker exec -it test.1.5m1mge0rf2pwnmdirejr3v81z cat /run/secrets/test1
+nNDuUPKfr8LQQgHY2Faz#-MP8b+t
 ```

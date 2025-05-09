@@ -20,6 +20,14 @@
 				"value"
 			],
 			"value": ""
+		},
+		{
+			"name": "PASSWORDSTATE_LIST_ID",
+			"description": "Passwordstate list ID",
+			"settable": [
+				"value"
+			],
+			"value": ""
 		}
 	],
 	"mounts": [],
